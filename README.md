@@ -1,8 +1,8 @@
 ## Sim Fix For Helio G99
 ![License](https://img.shields.io/static/v1?label=License&message=BY-NC-SA&logo=creativecommons&color=green)
 ![Language](https://img.shields.io/github/languages/top/oliplusmzr/Sim_Fix_For_G99)
-![Issues](https://img.shields.io/github/issues/DogDayAndroid/Android-Builder)
-![Pull Requests](https://img.shields.io/github/issues-pr/DogDayAndroid/Android-Builder)
+![Issues](https://img.shields.io/github/issues/oliplusmzr/Sim_Fix_For_G99)
+![Pull Requests](https://img.shields.io/github/issues-pr/oliplusmzr/Sim_Fix_For_G99)
 <br>
 This magisk module is used to fix the SIM Bug on your phone. It reduces battery consumption a little since it performs operations at the root level. 
 
