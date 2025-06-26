@@ -1,0 +1,7 @@
+id=sim_bug_fixer_oli88
+name=SIM Bug Fixer
+version=Blue
+versionCode=25
+author=oliplusmzr
+description=Sim Bug Fix For G99
+updateJson=https://raw.githubusercontent.com/oliplusmzr/Sim_Bug_Fixer/master/update.json
