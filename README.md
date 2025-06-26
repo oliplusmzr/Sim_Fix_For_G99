@@ -1,6 +1,6 @@
 ## Sim Fix For Helio G99
 ![License](https://img.shields.io/static/v1?label=License&message=BY-NC-SA&logo=creativecommons&color=green)
-![Language](https://img.shields.io/github/languages/oliplusmzr/Sim_Fix_For_G99)
+![Language](https://img.shields.io/github/languages/top/oliplusmzr/Sim_Fix_For_G99)
 ![Issues](https://img.shields.io/github/issues/oliplusmzr/Sim_Fix_For_G99)
 ![Pull Requests](https://img.shields.io/github/issues-pr/oliplusmzr/Sim_Fix_For_G99)
 <br>
