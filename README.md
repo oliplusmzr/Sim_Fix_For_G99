@@ -2,6 +2,9 @@
 ![Language](https://img.shields.io/github/languages/top/oliplusmzr/Sim_Fix_For_G99)
 ![Issues](https://img.shields.io/github/issues/oliplusmzr/Sim_Fix_For_G99)
 ![Pull Requests](https://img.shields.io/github/issues-pr/oliplusmzr/Sim_Fix_For_G99)
+[![Chat on Telegram][ico-telegram]][link-telegram]
+[![Latest Version on Packagist][ico-version]][link-packagist]
+[![Software License][ico-license]](LICENSE.md)
 <br>
 This magisk module is used to fix the SIM Bug on your phone. It reduces battery consumption a little since it performs operations at the root level. 
 
