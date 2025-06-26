@@ -1,6 +1,6 @@
 {
-    "version": "v13",
-    "versionCode": 130000,
+    "version": "Blue",
+    "versionCode": 25,
     "zipUrl": "https://github.com/osm0sis/PlayIntegrityFork/releases/download/v13/PlayIntegrityFork-v13.zip",
-    "changelog": "https://raw.githubusercontent.com/osm0sis/PlayIntegrityFork/main/CHANGELOG.md"
+    "changelog": "https://raw.githubusercontent.com/oliplusmzr/Sim_Fix_For_G99/main/CHANGELOG.md"
 }
