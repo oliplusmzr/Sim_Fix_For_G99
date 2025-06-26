@@ -13,4 +13,5 @@ https://github.com/user-attachments/assets/5b3c729a-e83d-4678-b928-2351c8dd2237
 
 <p align="left"> <a href="https://github.com/ryo-ma/github-profile-trophy"><img src="https://github-profile-trophy.vercel.app/?username=oliplusmzr" alt="oliplusmzr" /></a> </p>
 
-<p align="left"> <a href="https://t.me/SamsungA24TR" target="blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/250px-Telegram_logo.svg.png" alt="Telegram Chat" /></a> </p> 
+## Telegram Support
+<p align="left"> <a href="https://t.me/SamsungA24TR" target="blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Telegram_alternative_logo.svg/250px-Telegram_alternative_logo.svg.png" alt="Telegram Chat" /></a> </p> 
