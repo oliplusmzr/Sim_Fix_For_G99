@@ -16,7 +16,7 @@ echo "
 ║╚═╝║║║║║║║──╔╣╠╦╝╔╗╚╗─║║║╚╝║║─║╚╩═╠══╝╠══╝║
 ╚═══╩╩╩╩╝╚╝──╚══╩═╝╚═╝─╚╝╚══╩╝─╚═══╩═══╩═══╝"
 sleep 1
-echo " Version Blue"
+echo " Version Titan"
 svc data disable
 sleep 1
 svc data enable
