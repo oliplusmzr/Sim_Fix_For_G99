@@ -15,7 +15,7 @@ rm -f /data/local/tmp/simfix.log
 rm -f /data/local/tmp/simfix_log.txt
 rm -f /data/local/tmp/simfix_log_date.txt
 rm -f /data/local/tmp/debug_service.log
-ui_print " Version Blue"
+ui_print " Version Titan"
 ui_print "   Installing for $ARCH SDK $API device..."
 ui_print "          ### Device Info ###"
 ui_print "   Model: $(getprop ro.product.vendor.model)"
