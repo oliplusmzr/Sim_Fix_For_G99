@@ -1,0 +1,35 @@
+name: Build Magisk Module
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Reposu klonla
+        uses: actions/checkout@v3
+
+      - name: Gereksiz dosyaları sil
+        run: |
+          rm -rf README.md LICENSE update.json changelog.md .github
+
+      - name: Build tarihini ayarla
+        id: vars
+        run: echo "BUILD_DATE=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
+
+      - name: Zip dosyasını oluştur
+        run: |
+          ZIP_NAME="Sim_Fix_For_G99_build-${{ steps.vars.outputs.BUILD_DATE }}.zip"
+          zip -r "$ZIP_NAME" . -x '*.git*'
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: Build artifact olarak kaydet
+        uses: actions/upload-artifact@v3
+        with:
+          name: Sim_Fix_For_G99
+          path: ${{ env.ZIP_NAME }}
+
