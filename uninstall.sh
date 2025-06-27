@@ -25,3 +25,4 @@ if [ -f $INFO ]; then
   done < $INFO
   rm -f $INFO
 fi
+#Goodbye my Boi
