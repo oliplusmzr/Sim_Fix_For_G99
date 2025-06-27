@@ -28,8 +28,7 @@ jobs:
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
       - name: Build artifact olarak kaydet
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Sim_Fix_For_G99
           path: ${{ env.ZIP_NAME }}
-
