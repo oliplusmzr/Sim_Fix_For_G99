@@ -15,10 +15,9 @@ jobs:
 
       - name: Geçici klasör oluştur ve dosyaları taşı
         run: |
-          mkdir output
-          cp -r * output/
-          rm -rf output/README.md output/LICENSE output/update.json output/changelog.md output/.github
-
+              mkdir output
+              rsync -av --exclude=output --exclude=.git --exclude=README.md --exclude=LICENSE --exclude=update.json --exclude=changelog.md --exclude=.github ./ output/
+    
       - name: Build tarihini ayarla
         id: vars
         run: echo "BUILD_DATE=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
