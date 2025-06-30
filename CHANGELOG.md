@@ -1,4 +1,4 @@
-### Version Pink Released!
+## Version Pink Released!
 * Bugs Fixed
 * Due to OneUI 7's system limitation, the working interval of sim fix has been reduced from 5 hours to 3 hours.
 
