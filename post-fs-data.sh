@@ -1,66 +1,53 @@
 #!/system/bin/sh
 
-MODDIR=${0%/*}
+set -x
+exec > /data/local/tmp/simfix_debug.log 2>&1
+
+{
+  echo ""
+  echo "============================================="
+  echo "== SIM BUG FIXER v1.0 by @oliplusmzr loaded =="
+  echo "== $(date '+%Y-%m-%d %H:%M:%S') =="
+  echo "============================================="
+} &
 
 (
-exec > /data/local/tmp/simfix_debug.log 2>&1
-set -x
+  echo "$(date '+%Y-%m-%d %H:%M:%S') - Waiting for boot..."
+  while [ "$(getprop sys.boot_completed)" != "1" ]; do
+    sleep 5
+  done
 
-LOGFILE="/data/local/tmp/simfix_log.txt"
-DATEFILE="/data/local/tmp/simfix_log_date.txt"
+  echo "$(date '+%Y-%m-%d %H:%M:%S') - Boot completed. Initial SIM reset starting..."
+  sleep 10
 
-log -p i -t SIM_FIX "Waiting for boot completion..."
-while [ "$(getprop sys.boot_completed)" != "1" ]; do
-  sleep 5
-done
+  settings put global mobile_data 0
+  sleep 2
+  settings put global mobile_data 1
+  stop ril-daemon
+  sleep 1
+  start ril-daemon
 
-log -p i -t SIM_FIX "Boot completed. Waiting 2 minutes..."
-sleep 120
+  echo "$(date '+%Y-%m-%d %H:%M:%S') - Initial SIM reset done."
 
-echo "====== $(date) ======" >> $LOGFILE
-echo "Initial SIM reset started" >> $LOGFILE
+  while true; do
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - Scheduled loop started."
+    CALL_STATE=$(dumpsys telephony.registry | grep -m 1 'mCallState=' | awk -F= '{print $2}' | tr -d '\r')
 
-settings put global mobile_data 0
-sleep 2
-settings put global mobile_data 1
-stop ril-daemon
-sleep 1
-start ril-daemon
+    if [ "$CALL_STATE" = "0" ]; then
+      echo "$(date '+%Y-%m-%d %H:%M:%S') - No call. SIM reset initiated."
 
-echo "$(date) - Initial SIM reset completed." >> $LOGFILE
-log -p i -t SIM_FIX "Initial SIM reset completed."
+      settings put global mobile_data 0
+      sleep 2
+      settings put global mobile_data 1
+      stop ril-daemon
+      sleep 1
+      start ril-daemon
 
-while true; do
-  TODAY=$(date +%Y-%m-%d)
-  if [ -f "$DATEFILE" ]; then
-    LAST_DATE=$(cat "$DATEFILE")
-    if [ "$TODAY" != "$LAST_DATE" ]; then
-      echo "" > "$LOGFILE"
+      echo "$(date '+%Y-%m-%d %H:%M:%S') - SIM reset completed."
+    else
+      echo "$(date '+%Y-%m-%d %H:%M:%S') - Call active. Reset skipped."
     fi
-  fi
-  echo "$TODAY" > "$DATEFILE"
 
-  CALL_STATE=$(dumpsys telephony.registry | grep -m 1 'mCallState=' | awk -F= '{print $2}' | tr -d '\r')
-
-  if [ "$CALL_STATE" = "0" ]; then
-    log -p i -t SIM_FIX "No call. Starting scheduled SIM reset..."
-    echo "$(date) - SIM reset started" >> $LOGFILE
-
-    settings put global mobile_data 0
-    sleep 2
-    settings put global mobile_data 1
-    stop ril-daemon
-    sleep 1
-    start ril-daemon
-
-    echo "$(date) - SIM reset completed." >> $LOGFILE
-    echo "" >> $LOGFILE
-  else
-    log -p i -t SIM_FIX "Call active. Reset postponed."
-    echo "$(date) - Call active. SIM reset skipped." >> $LOGFILE
-  fi
-
-  sleep 18000
-done
-
+    sleep 10800
+  done
 ) &
