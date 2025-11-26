@@ -1,102 +1,115 @@
 #!/system/bin/sh
-#!/system/bin/sh
 
-# Log dosyası yolu
-LOG_FILE="/data/local/tmp/simfix_debug.log"
-# Son kaydedilen günün tutulacağı dosya
-LAST_LOG_DAY_FILE="/data/local/tmp/simfix_last_log_day"
+LOGFILE="/data/local/tmp/simfix_lite.log"
 
-# Mevcut günü al
-CURRENT_DAY=$(date '+%Y%m%d')
+log_msg() {
+    echo "$1"
+    echo "$1" >> $LOGFILE
+}
+echo "
+╔══╦╗──╔══╦╗─╔══╗──╔══╦═══╦═══╗
+║══╬╬══╣═╦╬╬╦╣═╦╩╦╦╣╔═╣╔═╗║╔═╗║
+╠══║║║║║╔╝║╠║╣╔╣╬║╔╣╚╗║╚═╝║╚═╝║
+╚══╩╩╩╩╩╝─╚╩╩╩╝╚═╩╝╚══╩══╗╠══╗║
+──────────────────────╔══╝╠══╝║
+Build: Carmine"
 
-# Son kaydedilen günü oku
-if [ -f "$LAST_LOG_DAY_FILE" ]; then
-  LAST_LOG_DAY=$(cat "$LAST_LOG_DAY_FILE")
-else
-  LAST_LOG_DAY=""
-fi
-
-# Eğer gün değiştiyse veya dosya yoksa, log dosyasını temizle
-if [ "$CURRENT_DAY" != "$LAST_LOG_DAY" ]; then
-  echo "" > "$LOG_FILE" # Log dosyasını boşalt
-  echo "$CURRENT_DAY" > "$LAST_LOG_DAY_FILE" # Yeni günü kaydet
-fi
-
-# Loglama yönlendirmesi (bu kısım eski betikteki ile aynı)
-exec > "$LOG_FILE" 2>&1
-
-# Hata ayıklama için her komutu loga yazdırır. İstemediğinizde kaldırabilirsiniz.
-set -x
-
-{
-  echo ""
-  echo "================================================="
-  echo "== SIM BUG FIXER vORANGE by @oliplusmzr (service.sh)=="
-  echo "== $(date '+%Y-%m-%d %H:%M:%S') =="
-  echo "================================================="
-} &
-
-(
-  echo "$(date '+%Y-%m-%d %H:%M:%S') - service.sh başlatıldı. Önyükleme tamamlanmasını bekliyor..."
-
-  # sys.boot_completed zaten Magisk'in service.sh'i başlatmadan önce beklenir,
-  # ancak ek bir güvenlik katmanı olarak bırakılabilir veya kaldırılabilir.
-  # Bu kısım genellikle service.sh için gerekli değildir.
-  while [ "$(getprop sys.boot_completed)" != "1" ]; do
-    sleep 5
-  done
-  echo "$(date '+%Y-%m-%d %H:%M:%S') - Önyükleme tamamlandı. Başlangıç SIM sıfırlaması başlıyor..."
-  sleep 10 # Servislerin tam olarak oturması için kısa bir bekleme
-
-  # Başlangıç SIM ve Mobil Veri Sıfırlama
-  settings put global mobile_data 0
-  sleep 2
-  settings put global mobile_data 1
-  stop ril-daemon
-  sleep 1
-  start ril-daemon
-  echo "$(date '+%Y-%m-%d %H:%M:%S') - Başlangıç SIM sıfırlaması tamamlandı."
-
-  LAST_RESET_TIME=$(date +%s) # Son sıfırlama zamanını kaydet
-
-  while true; do
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - Planlanmış döngü başladı."
-    CURRENT_TIME=$(date +%s)
-    TIME_SINCE_LAST_RESET=$((CURRENT_TIME - LAST_RESET_TIME))
-
-    # Arama kontrol döngüsü
-    while true; do
-      CALL_STATE=$(dumpsys telephony.registry | grep -m 1 'mCallState=' | awk -F= '{print $2}' | tr -d '\r')
-
-      if [ "$CALL_STATE" = "0" ]; then
-        echo "$(date '+%Y-%m-%d %H:%M:%S') - Arama yok."
-        break # Arama yoksa ana döngüye geri dön
-      else
-        echo "$(date '+%Y-%m-%d %H:%M:%S') - Arama aktif ($CALL_STATE). Sıfırlama atlandı, 60 saniye sonra tekrar kontrol edilecek."
-        sleep 60 # Arama varken 60 saniyede bir kontrol et
-      fi
-    done
-
-    # Arama bittiğine göre veya zaten yoksa, 3 saatlik aralığı kontrol et
-    if [ "$TIME_SINCE_LAST_RESET" -ge 10800 ]; then # 10800 saniye = 3 saat
-      echo "$(date '+%Y-%m-%d %H:%M:%S') - 3 saatlik aralık doldu. SIM sıfırlaması başlatıldı."
-
-      settings put global mobile_data 0
-      sleep 2
-      settings put global mobile_data 1
-      stop ril-daemon
-      sleep 1
-      start ril-daemon
-
-      echo "$(date '+%Y-%m-%d %H:%M:%S') - SIM sıfırlaması tamamlandı."
-      LAST_RESET_TIME=$(date +%s) # Sıfırlama sonrası zamanı güncelle
-    else
-      echo "$(date '+%Y-%m-%d %H:%M:%S') - 3 saatlik aralık henüz dolmadı ($((TIME_SINCE_LAST_RESET / 60)) dakika geçti). Sıfırlama atlandı."
+check_log_size() {
+    if [ -f "$LOGFILE" ]; then
+        FILESIZE=$(stat -c%s "$LOGFILE")
+        if [ $FILESIZE -ge 1048576 ]; then
+            echo "Log cleared due to size limit." > "$LOGFILE"
+        fi
     fi
+}
 
-    # Bir sonraki kontrol için bekleme (Arama kontrolü olduğu için bu sleep daha kısa olabilir)
-    # Burada döngünün ne kadar sıklıkta döneceğini ayarlayabilirsiniz.
-    # Örneğin, her 5 dakikada bir kontrol edilebilir.
-    sleep 300 # 300 saniye = 5 dakika
-  done
-) &
+check_normal_call() {
+    CHECK_TELECOM=$(dumpsys telecom 2>/dev/null | grep "isInCall=true")
+    CHECK_REGISTRY=$(dumpsys telephony.registry 2>/dev/null | grep "mCallState=" | head -n 1 | grep -v "=0")
+
+    if [ -n "$CHECK_TELECOM" ]; then
+        echo "1" 
+    elif [ -n "$CHECK_REGISTRY" ]; then
+        echo "1" 
+    else
+        echo "0" 
+    fi
+}
+
+check_voip_call() {
+    AUDIO_MODE=$(dumpsys audio 2>/dev/null | grep "mMode=" | head -n 1)
+    case "$AUDIO_MODE" in
+        *"2"*|*"3"*|*"IN_CALL"*|*"IN_COMMUNICATION"*)
+            echo "1"
+            ;;
+        *)
+            echo "0"
+            ;;
+    esac
+}
+
+check_data_status() {
+    settings get global mobile_data 2>/dev/null
+}
+
+echo "SIM FIX LITE STARTED: $(date)" > $LOGFILE
+
+while [ "$(getprop sys.boot_completed)" != "1" ]; do
+    sleep 5
+done
+
+sleep 60
+log_msg "$(date '+%H:%M') - Boot ok. Timer start."
+
+LAST_RESET_TIME=$(date '+%s')
+
+while true; do
+    sleep 60
+    
+    CURRENT_TIME=$(date '+%s')
+    TIME_SINCE_LAST_RESET=$((CURRENT_TIME - LAST_RESET_TIME))
+    
+    if [ $TIME_SINCE_LAST_RESET -ge 10800 ]; then
+    
+        check_log_size
+        
+        log_msg "$(date '+%H:%M') - 3H Check..."
+        
+        NORMAL_CALL=$(check_normal_call)
+        if [ "$NORMAL_CALL" = "1" ]; then
+            log_msg "Call detected. Postponing 5m."
+            LAST_RESET_TIME=$((CURRENT_TIME - 10500)) 
+            continue
+        fi
+
+        VOIP_CALL=$(check_voip_call)
+        if [ "$VOIP_CALL" = "1" ]; then
+            log_msg "VoIP detected. Postponing 5m."
+            LAST_RESET_TIME=$((CURRENT_TIME - 10500))
+            continue
+        fi
+        
+        log_msg "No calls. Resetting..."
+        
+        DATA_STATUS=$(check_data_status)
+        
+        if [ "$DATA_STATUS" = "1" ]; then
+            svc data disable
+            sleep 1
+            stop ril-daemon
+            sleep 1
+            start ril-daemon
+            sleep 5
+            svc data enable
+        else
+            stop ril-daemon
+            sleep 1
+            start ril-daemon
+            sleep 5
+        fi
+        
+        log_msg "$(date '+%H:%M') - Done."
+        LAST_RESET_TIME=$(date '+%s')
+    fi
+    
+done
