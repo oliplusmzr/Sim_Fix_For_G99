@@ -1,13 +1,16 @@
 #!/system/bin/sh
+echo "
+╔══╦╗──╔══╦╗─╔══╗──╔══╦═══╦═══╗
+║══╬╬══╣═╦╬╬╦╣═╦╩╦╦╣╔═╣╔═╗║╔═╗║
+╠══║║║║║╔╝║╠║╣╔╣╬║╔╣╚╗║╚═╝║╚═╝║
+╚══╩╩╩╩╩╝─╚╩╩╩╝╚═╩╝╚══╩══╗╠══╗║
+──────────────────────╔══╝╠══╝║"
 rm -f /sdcard/simfix_log.txt
 rm -f /sdcard/simfix_log_date.txt
 rm -f /sdcard/simfix.log
 rm -f /sdcard/Download/simfix_log.txt
-rm -f /data/local/tmp/simfix
-rm -f /data/local/tmp/simfix.log
-rm -f /data/local/tmp/simfix_log.txt
-rm -f /data/local/tmp/simfix_log_date.txt
-rm -f /data/local/tmp/debug_service.log
+rm -f /data/local/tmp/simfix*
+
 # Don't modify anything after this
 if [ -f $INFO ]; then
   while read LINE; do
