@@ -1,6 +1,6 @@
 {
-    "version": "Orange",
-    "versionCode": 28,
-    "zipUrl": "https://github.com/oliplusmzr/Sim_Fix_For_G99/releases/download/Orange/Sim_Fix_For_G99_ORANGE.zip",
+    "version": "Carmine",
+    "versionCode": 30,
+    "zipUrl": "https://github.com/oliplusmzr/Sim_Fix_For_G99/releases/download/carmine/Sim_Fix_For_G99_Carmine.zip",
     "changelog": "https://raw.githubusercontent.com/oliplusmzr/Sim_Fix_For_G99/main/CHANGELOG.md"
 }
