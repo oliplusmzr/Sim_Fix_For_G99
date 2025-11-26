@@ -1,6 +1,6 @@
 set -x
 exec > /data/local/tmp/simfix_debug.log 2>&1
-LOGFILE="/data/local/tmp/simfix_log.txt"
+LOGFILE="/data/local/tmp/simfix_action.txt"
 {
   echo "====== $(date) ======"
   echo "Manual SIM reset started"
@@ -9,14 +9,14 @@ echo "         **** $(date) **** "
 echo " Service Started"
 sleep 1
 echo "
-╔═══╗────╔═══╦══╦═╗╔═╗─╔═╗─────╔═══╦═══╦═══╗
-║╔═╗║────║╔══╩╣╠╩╗╚╝╔╝─║╔╝─────║╔═╗║╔═╗║╔═╗║
-║╚══╦╦╗╔╗║╚══╗║║─╚╗╔╝─╔╝╚╦══╦═╗║║─╚╣╚═╝║╚═╝║
-╚══╗╠╣╚╝║║╔══╝║║─╔╝╚╗─╚╗╔╣╔╗║╔╝║║╔═╬══╗╠══╗║
-║╚═╝║║║║║║║──╔╣╠╦╝╔╗╚╗─║║║╚╝║║─║╚╩═╠══╝╠══╝║
-╚═══╩╩╩╩╝╚╝──╚══╩═╝╚═╝─╚╝╚══╩╝─╚═══╩═══╩═══╝"
+                      ᴴᵉˡⁱᵒ
+╔══╦╗──╔══╦╗─╔══╗──╔══╦═══╦═══╗
+║══╬╬══╣═╦╬╬╦╣═╦╩╦╦╣╔═╣╔═╗║╔═╗║
+╠══║║║║║╔╝║╠║╣╔╣╬║╔╣╚╗║╚═╝║╚═╝║
+╚══╩╩╩╩╩╝─╚╩╩╩╝╚═╩╝╚══╩══╗╠══╗║
+──────────────────────╔══╝╠══╝║"
 sleep 1
-echo " Version Pink"
+echo " Version Carmine"
 svc data disable
 sleep 1
 svc data enable
