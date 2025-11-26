@@ -1,21 +1,18 @@
 ui_print "
-╔═══╗────╔═══╦══╦═╗╔═╗─╔═╗─────╔═══╦═══╦═══╗
-║╔═╗║────║╔══╩╣╠╩╗╚╝╔╝─║╔╝─────║╔═╗║╔═╗║╔═╗║
-║╚══╦╦╗╔╗║╚══╗║║─╚╗╔╝─╔╝╚╦══╦═╗║║─╚╣╚═╝║╚═╝║
-╚══╗╠╣╚╝║║╔══╝║║─╔╝╚╗─╚╗╔╣╔╗║╔╝║║╔═╬══╗╠══╗║
-║╚═╝║║║║║║║──╔╣╠╦╝╔╗╚╗─║║║╚╝║║─║╚╩═╠══╝╠══╝║
-╚═══╩╩╩╩╝╚╝──╚══╩═╝╚═╝─╚╝╚══╩╝─╚═══╩═══╩═══╝"
+                     ᴴᵉˡⁱᵒ
+╔══╦╗──╔══╦╗─╔══╗──╔══╦═══╦═══╗
+║══╬╬══╣═╦╬╬╦╣═╦╩╦╦╣╔═╣╔═╗║╔═╗║
+╠══║║║║║╔╝║╠║╣╔╣╬║╔╣╚╗║╚═╝║╚═╝║
+╚══╩╩╩╩╩╝─╚╩╩╩╝╚═╩╝╚══╩══╗╠══╗║
+──────────────────────╔══╝╠══╝║"
 MODDIR=${0%/*}
-rm -f /sdcard/simfix_log.txt
-rm -f /sdcard/simfix_log_date.txt
-rm -f /sdcard/simfix.log
+ui_print "   Cleaning up old log records."
+rm -f /sdcard/simfix*
 rm -f /sdcard/Download/simfix_log.txt
-rm -f /data/local/tmp/simfix
-rm -f /data/local/tmp/simfix.log
-rm -f /data/local/tmp/simfix_log.txt
-rm -f /data/local/tmp/simfix_log_date.txt
 rm -f /data/local/tmp/debug_service.log
-ui_print " Version Pink"
+rm -f /data/local/tmp/simfix*
+sleep 2
+ui_print "          Version Carmine"
 ui_print "   Installing for $ARCH SDK $API device..."
 ui_print "          ### Device Info ###"
 ui_print "   Model: $(getprop ro.product.vendor.model)"
