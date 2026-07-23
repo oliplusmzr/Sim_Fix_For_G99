@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G99 Sim Fix</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{background:#1a0f2e;color:#F8EDFF;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:15px;padding-bottom:120px;margin:0;-webkit-user-select:none;user-select:none}
+.card{background:#201535;border-radius:18px;padding:16px;margin-bottom:15px;border:1px solid #3a2558;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.ct{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#7c5cfc;margin:0 0 8px}
+.row{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid #2a1a45}
+.row:last-child{border-bottom:none}
+.rl{flex:1;font-size:14px;color:#d0bfff;margin-right:12px;line-height:1.3}
+.rl small{display:block;font-size:11px;color:#5a4a78;margin-top:2px}
+.switch{position:relative;display:inline-block;width:52px;height:28px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:#2e1f48;border:1px solid #4a3568;transition:.3s;border-radius:28px}
+.slider::before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:#8a7aaa;transition:.3s;border-radius:50%}
+input:checked+.slider{background:#7c5cfc;border-color:#7c5cfc}
+input:checked+.slider::before{transform:translateX(24px);background:#fff}
+select{background:#2e1f48;color:#F8EDFF;padding:8px 10px;border-radius:10px;border:1px solid #4a3568;outline:none;font-size:13px;font-weight:600;max-width:145px;min-width:100px;cursor:pointer;flex-shrink:0;-webkit-appearance:none;appearance:none}
+select:focus{border-color:#7c5cfc}
+#excList{margin:0 0 12px;display:flex;flex-direction:column;gap:6px}
+.exc-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#110b20;border-radius:10px;border:1px solid #2a1a45}
+.exc-name{flex:1;font-family:"Courier New",monospace;font-size:12px;color:#a98dff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exc-empty{color:#4a3568;font-style:italic;font-size:13px;padding:10px 4px;text-align:center}
+.btn-del{background:linear-gradient(135deg,#b71c1c,#e53935);color:#fff;border:none;border-radius:7px;padding:6px 13px;font-size:11px;font-weight:800;letter-spacing:1px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(183,28,28,.5);transition:transform .1s}
+.btn-del:active{transform:scale(.9)}
+.btn2{width:100%;padding:13px;border-radius:12px;border:1px solid #4a3568;background:#2e1f48;color:#c4adff;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px}
+.btn2:active{opacity:.6}
+.btnfix{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#4a1060,#7c1fa0);color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(124,31,160,.4);margin-bottom:8px}
+.btnfix:active{opacity:.8}
+.btnnotif{width:100%;padding:13px;border-radius:12px;border:1px solid #1565c0;background:#0d2a4a;color:#64b5f6;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.btnnotif:active{opacity:.6}
+.btndebug{width:100%;padding:13px;border-radius:12px;border:1px solid #3a2558;background:#170e28;color:#7c5cfc;font-size:13px;font-weight:700;cursor:pointer}
+.btndebug:active{opacity:.6}
+#toast{visibility:hidden;min-width:220px;max-width:88%;text-align:center;border-radius:16px;padding:13px 22px;position:fixed;z-index:2000;left:50%;bottom:30px;transform:translateX(-50%);font-size:13px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.6);opacity:0;transition:opacity .3s ease,bottom .3s ease;pointer-events:none}
+#toast.show{visibility:visible;opacity:1;bottom:48px}
+#toast.s{background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff}
+#toast.e{background:linear-gradient(135deg,#7f0000,#c62828);color:#fff}
+#toast.i{background:linear-gradient(135deg,#0d47a1,#1565c0);color:#fff}
+.fab{position:fixed;bottom:28px;right:20px;background:linear-gradient(135deg,#6a3fd4,#a98dff);color:#fff;padding:14px 28px;border-radius:50px;border:none;font-weight:700;font-size:15px;box-shadow:0 6px 22px rgba(106,63,212,.6);display:flex;align-items:center;gap:8px;cursor:pointer;z-index:900;transition:transform .1s}
+.fab:active{transform:scale(.95)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(8,4,18,.97);z-index:1000;flex-direction:column;padding:18px}
+.oh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-shrink:0}
+.ot{font-size:16px;font-weight:700;color:#F8EDFF}
+.oc{color:#6a5a8a;font-size:28px;cursor:pointer;line-height:1;padding:2px 6px}
+.oc:active{color:#F8EDFF}
+#appSearch{width:100%;padding:11px 16px;border-radius:30px;border:1px solid #3a2558;font-size:14px;margin-bottom:12px;background:#F8EDFF;color:#1a0f2e;outline:none;flex-shrink:0}
+#appHint{font-size:11px;color:#5a4a78;text-align:center;margin-bottom:8px;flex-shrink:0}
+#appListContainer{flex:1;overflow-y:auto;background:#110b20;border-radius:14px;padding:6px}
+.ai{padding:13px 12px;border-bottom:1px solid #1a1030;cursor:pointer;color:#c4adff;font-size:12px;font-family:"Courier New",monospace;border-radius:6px}
+.ai:last-child{border-bottom:none}
+.ai:active{background:#2e1f48}
+#debugOutput{flex:1;overflow-y:auto;background:#0a0614;border-radius:10px;padding:12px;font-family:"Courier New",monospace;font-size:11px;color:#a0f0a0;white-space:pre-wrap;word-break:break-all;line-height:1.6;border:1px solid #1a1030}
+.dbr{display:flex;gap:6px;margin-bottom:10px;flex-shrink:0;flex-wrap:wrap}
+.dbr button{flex:1;min-width:70px;padding:10px 4px;border-radius:10px;border:1px solid #3a2558;background:#1e1035;color:#c4adff;font-size:11px;font-weight:700;cursor:pointer}
+.dbr button:active{opacity:.6}
+.logo{text-align:center;margin-bottom:20px;padding-top:6px}
+.logo h2{margin:0 0 3px;font-size:20px;background:linear-gradient(135deg,#a98dff,#f8edff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo small{color:#4a3568;font-size:11px}
+.hint{color:#4a3568;font-size:11px;display:block;margin-bottom:10px}
+#ldbanner{text-align:center;padding:10px;font-size:12px;color:#7c5cfc;margin-bottom:10px;display:none}
+#copyArea{position:fixed;left:-9999px;top:-9999px}
+.support-row{display:flex;gap:10px;margin-top:4px}
+.support-link{flex:1;display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:14px;text-decoration:none;transition:opacity .15s;border:1px solid}
+.support-link:active{opacity:.6}
+.support-link.tg{background:#0d2a3e;border-color:#0088cc}
+.support-link.gh{background:#161b22;border-color:#30363d}
+.support-link svg{flex-shrink:0}
+.support-link-text{display:flex;flex-direction:column}
+.support-link-title{font-size:13px;font-weight:700;color:#F8EDFF}
+.support-link-sub{font-size:10px;color:#5a4a78;margin-top:1px}
+</style>
+</head>
+<body>
+
+<div class="logo">
+    <h2>⚡ Sim Fix For G99 ⚡</h2>
+    <small>OLI88 WebUI Projects</small>
+</div>
+
+<div id="ldbanner">⏳ Loading settings...</div>
+
+<div class="card">
+    <p class="ct">General Settings</p>
+    <div class="row">
+        <span class="rl">System / Dialer Type</span>
+        <select id="romTipi">
+            <option value="AUTO">🤖 Auto</option>
+            <option value="ONEUI">OneUI</option>
+            <option value="GOOGLE">AOSP</option>
+            <option value="MIUI">HyperOS/MIUI</option>
+        </select>
+    </div>
+    <div class="row">
+        <span class="rl">Repeat Interval</span>
+        <select id="saatSecimi">
+            <option value="test">1 Min (Test)</option>
+            <option value="1">1 Hour</option>
+            <option value="2">2 Hours</option>
+            <option value="3">3 Hours</option>
+            <option value="4">4 Hours</option>
+            <option value="5">5 Hours</option>
+            <option value="6">6 Hours</option>
+        </select>
+    </div>
+    <div class="row">
+        <span class="rl">Sim Fix Active<small>Enable/disable background service</small></span>
+        <label class="switch"><input type="checkbox" id="fixAktif"><span class="slider"></span></label>
+    </div>
+    <div class="row">
+        <span class="rl">Mobile Data Control<small>Toggle data off/on during fix</small></span>
+        <label class="switch"><input type="checkbox" id="mobilVeriKontrol"><span class="slider"></span></label>
+    </div>
+    <div class="row">
+        <span class="rl">VoIP / Call Check<small>Skip fix if a call is active</small></span>
+        <label class="switch"><input type="checkbox" id="wpKontrol"><span class="slider"></span></label>
+    </div>
+    <div class="row">
+        <span class="rl">Show Notification<small>Heads-up alert after each fix</small></span>
+        <label class="switch"><input type="checkbox" id="notifKontrol"><span class="slider"></span></label>
+    </div>
+</div>
+
+<div class="card">
+    <p class="ct">Excluded Applications</p>
+    <small class="hint">Fix will not run while any of these apps is in the foreground.</small>
+    <div id="excList"><div class="exc-empty">No apps excluded yet.</div></div>
+    <button class="btn2" onclick="openAppModal()">+ Add App</button>
+</div>
+
+<div class="card">
+    <p class="ct">Actions</p>
+    <button class="btnfix" onclick="runManualFix()">⚡ Run Fix Now</button>
+    <button class="btnnotif" onclick="testNotif()">🔔 Test Notification</button>
+    <button class="btndebug" onclick="openDebug()">🛠 Debug Panel</button>
+</div>
+
+<div class="card">
+    <p class="ct">Support</p>
+    <div class="support-row">
+        <a class="support-link tg" href="https://t.me/oliplusmzr" target="_blank">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <circle cx="14" cy="14" r="14" fill="#0088cc"/>
+                <path d="M6.5 13.6l12.6-4.9c.6-.2 1.1.1 1 .8l-2.1 10c-.2.7-.6.9-1.1.6l-3-2.3-1.5 1.4c-.2.2-.4.3-.7.3l.3-3.1 6.5-5.9c.3-.3 0-.4-.4-.2L9.7 16.1 6.8 15c-.6-.2-.6-.6.2-.9z" fill="#fff"/>
+            </svg>
+            <span class="support-link-text">
+                <span class="support-link-title">Telegram</span>
+                <span class="support-link-sub">@oliplusmzr</span>
+            </span>
+        </a>
+        <a class="support-link gh" href="https://github.com/oliplusmzr/Sim_Fix_For_G99/issues" target="_blank">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <circle cx="14" cy="14" r="14" fill="#24292e"/>
+                <path d="M14 5.5a8.5 8.5 0 00-2.69 16.57c.43.08.58-.19.58-.41v-1.44c-2.37.51-2.87-1.14-2.87-1.14-.39-1-0.95-1.26-.95-1.26-.78-.53.06-.52.06-.52.86.06 1.31.88 1.31.88.76 1.31 2 .93 2.49.71.08-.55.3-.93.54-1.14-1.9-.22-3.89-.95-3.89-4.22 0-.93.33-1.69.88-2.29-.09-.22-.38-1.08.08-2.26 0 0 .72-.23 2.35.88a8.17 8.17 0 014.28 0c1.63-1.11 2.35-.88 2.35-.88.46 1.18.17 2.04.08 2.26.55.6.88 1.36.88 2.29 0 3.28-2 4-3.91 4.21.31.27.58.8.58 1.6v2.38c0 .22.15.49.59.41A8.5 8.5 0 0014 5.5z" fill="#fff"/>
+            </svg>
+            <span class="support-link-text">
+                <span class="support-link-title">GitHub Issues</span>
+                <span class="support-link-sub">Bug reports</span>
+            </span>
+        </a>
+    </div>
+</div>
+
+<div id="toast"></div>
+<textarea id="copyArea" readonly></textarea>
+
+<div id="appModal" class="overlay">
+    <div class="oh">
+        <span class="ot">Select Application</span>
+        <span class="oc" onclick="closeAppModal()">✕</span>
+    </div>
+    <input type="text" id="appSearch" placeholder="Type to search packages..." oninput="onSearch()">
+    <div id="appHint">Type at least 2 characters to search</div>
+    <div id="appListContainer">
+        <div style="text-align:center;color:#4a3568;padding:30px 0">Waiting for search...</div>
+    </div>
+</div>
+
+<div id="debugModal" class="overlay">
+    <div class="oh">
+        <span class="ot">🛠 Debug Panel</span>
+        <span class="oc" onclick="closeDebug()">✕</span>
+    </div>
+    <div class="dbr">
+        <button onclick="loadDebug()">↻ Refresh</button>
+        <button onclick="clearLog()">🗑 Clear Log</button>
+        <button onclick="rebuildApps()">↺ Rebuild Apps</button>
+        <button onclick="copyDebug()">📋 Copy</button>
+    </div>
+    <div id="debugOutput">Tap Refresh to load...</div>
+</div>
+
+<button class="fab" onclick="saveSettings()">💾 SAVE</button>
+
+<script>
+var AP = "/data/adb/modules/sim_bug_fixer_oli88/action.sh";
+var searchTimer = null;
+var lastDebug = "";
+var excludedApps = [];
+
+async function ex(cmd) {
+    try {
+        var r = await ksu.exec(cmd);
+        if (!r) return { ok: false, out: "", errno: -1 };
+        if (typeof r === "string") return { ok: true, out: r, errno: 0 };
+        var errno = typeof r.errno === "number" ? r.errno : 0;
+        var out = r.stdout !== undefined ? r.stdout : (r.out || "");
+        return { ok: errno === 0, out: out, errno: errno };
+    } catch (e) {
+        return { ok: false, out: String(e), errno: -99 };
+    }
+}
+
+function toast(msg, t) {
+    var el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className = "show " + (t || "s");
+    clearTimeout(el._t);
+    el._t = setTimeout(function() {
+        el.className = el.className.replace("show","").trim();
+        setTimeout(function(){ el.className=""; }, 400);
+    }, 3500);
+}
+
+function renderExcList() {
+    var container = document.getElementById("excList");
+    if (excludedApps.length === 0) {
+        container.innerHTML = '<div class="exc-empty">No apps excluded yet.</div>';
+        return;
+    }
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < excludedApps.length; i++) {
+        var row = document.createElement("div");
+        row.className = "exc-item";
+        var name = document.createElement("span");
+        name.className = "exc-name";
+        name.textContent = "📦 " + excludedApps[i];
+        var btn = document.createElement("button");
+        btn.className = "btn-del";
+        btn.textContent = "DEL";
+        (function(pkg) {
+            btn.addEventListener("click", function() { removeExclusion(pkg); });
+        })(excludedApps[i]);
+        row.appendChild(name);
+        row.appendChild(btn);
+        frag.appendChild(row);
+    }
+    container.innerHTML = "";
+    container.appendChild(frag);
+}
+
+function parse333(raw) {
+    var cfg = {};
+    if (!raw) return cfg;
+    var parts = raw.split("###");
+    for (var i = 0; i < parts.length; i++) {
+        var p = parts[i].trim();
+        if (!p) continue;
+        var eq = p.indexOf("=");
+        if (eq === -1) continue;
+        cfg[p.substring(0, eq).trim()] = p.substring(eq + 1).trim();
+    }
+    return cfg;
+}
+
+async function loadConfig() {
+    document.getElementById("ldbanner").style.display = "block";
+    var r = await ex("sh " + AP + " get_config");
+    document.getElementById("ldbanner").style.display = "none";
+    if (!r.ok || !r.out) {
+        toast("⚠ Config load failed (errno " + r.errno + ")", "e");
+        return;
+    }
+    var cfg = parse333(r.out);
+    if (cfg.FIX_ACTIVE !== undefined)    document.getElementById("fixAktif").checked         = cfg.FIX_ACTIVE === "true";
+    if (cfg.CHECK_DATA !== undefined)    document.getElementById("mobilVeriKontrol").checked = cfg.CHECK_DATA === "true";
+    if (cfg.CHECK_VOIP !== undefined)    document.getElementById("wpKontrol").checked        = cfg.CHECK_VOIP === "true";
+    if (cfg.SHOW_NOTIF !== undefined)    document.getElementById("notifKontrol").checked     = cfg.SHOW_NOTIF === "true";
+    if (cfg.INTERVAL_HOUR !== undefined) document.getElementById("saatSecimi").value         = cfg.INTERVAL_HOUR;
+    if (cfg.ROM_TYPE !== undefined)      document.getElementById("romTipi").value            = cfg.ROM_TYPE;
+    if (cfg.EXCLUDE_PKG !== undefined && cfg.EXCLUDE_PKG !== "") {
+        excludedApps = cfg.EXCLUDE_PKG.split(",").map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+    } else {
+        excludedApps = [];
+    }
+    renderExcList();
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(loadConfig, 500);
+});
+
+async function saveSettings() {
+    var cmd = "sh " + AP + " save_config " +
+        document.getElementById("fixAktif").checked + " " +
+        document.getElementById("mobilVeriKontrol").checked + " " +
+        document.getElementById("wpKontrol").checked + " " +
+        document.getElementById("saatSecimi").value + " " +
+        document.getElementById("romTipi").value + " " +
+        document.getElementById("notifKontrol").checked;
+    var r = await ex(cmd);
+    if (r.ok && r.out.indexOf("OK") !== -1) {
+        toast("✅ Settings Saved!", "s");
+    } else {
+        toast("⚠ Save failed (errno " + r.errno + "): " + r.out.substring(0, 50), "e");
+    }
+}
+
+function openAppModal() {
+    document.getElementById("appModal").style.display = "flex";
+    document.getElementById("appSearch").value = "";
+    document.getElementById("appHint").textContent = "Type at least 2 characters to search";
+    document.getElementById("appListContainer").innerHTML = '<div style="text-align:center;color:#4a3568;padding:30px 0">Waiting for search...</div>';
+}
+
+function closeAppModal() {
+    document.getElementById("appModal").style.display = "none";
+}
+
+function onSearch() {
+    clearTimeout(searchTimer);
+    var q = document.getElementById("appSearch").value.trim();
+    if (q.length < 2) {
+        document.getElementById("appHint").textContent = "Type at least 2 characters to search";
+        document.getElementById("appListContainer").innerHTML = '<div style="text-align:center;color:#4a3568;padding:30px 0">Waiting for search...</div>';
+        return;
+    }
+    document.getElementById("appHint").textContent = "Searching...";
+    document.getElementById("appListContainer").innerHTML = '<div style="text-align:center;color:#7c5cfc;padding:20px 0">Loading...</div>';
+    searchTimer = setTimeout(function() { doSearch(q); }, 400);
+}
+
+async function doSearch(q) {
+    var r = await ex("sh " + AP + " search_apps " + q);
+    if (!r.ok) {
+        document.getElementById("appListContainer").innerHTML = '<div style="text-align:center;color:#e53935;padding:20px 0">Search error (errno ' + r.errno + ')</div>';
+        return;
+    }
+    var parts = r.out.split("###");
+    var total = "";
+    var pkgs = [];
+    for (var i = 0; i < parts.length; i++) {
+        var p = parts[i].trim();
+        if (!p) continue;
+        if (p.indexOf("TOTAL=") === 0) {
+            total = p.substring(6);
+        } else if (p.length >= 5 && p.indexOf(".") !== -1 && p.indexOf("TOTAL=") !== 0) {
+            pkgs.push(p);
+        }
+    }
+    document.getElementById("appHint").textContent = "Total: " + total + " packages — showing top " + pkgs.length;
+    if (pkgs.length === 0) {
+        document.getElementById("appListContainer").innerHTML = '<div style="text-align:center;color:#6a5a8a;padding:20px 0">No matches for "' + q + '"</div>';
+        return;
+    }
+    var frag = document.createDocumentFragment();
+    for (var j = 0; j < pkgs.length; j++) {
+        var div = document.createElement("div");
+        div.className = "ai";
+        div.textContent = "📦 " + pkgs[j];
+        (function(pkg){ div.addEventListener("click", function(){ selectApp(pkg); }); })(pkgs[j]);
+        frag.appendChild(div);
+    }
+    var c = document.getElementById("appListContainer");
+    c.innerHTML = "";
+    c.appendChild(frag);
+}
+
+async function selectApp(pkg) {
+    closeAppModal();
+    for (var i = 0; i < excludedApps.length; i++) {
+        if (excludedApps[i] === pkg) {
+            toast("⚠ Already in the list.", "e");
+            return;
+        }
+    }
+    var r = await ex("sh " + AP + " save_exclude " + pkg);
+    if (r.ok && r.out.indexOf("OK") !== -1) {
+        excludedApps.push(pkg);
+        renderExcList();
+        toast("✅ " + pkg + " added.", "s");
+    } else if (r.out.indexOf("ALREADY_EXISTS") !== -1) {
+        toast("⚠ Already in the list.", "e");
+    } else {
+        toast("⚠ Save error (errno " + r.errno + ")", "e");
+    }
+}
+
+async function removeExclusion(pkg) {
+    var r = await ex("sh " + AP + " remove_exclude " + pkg);
+    if (r.ok) {
+        excludedApps = excludedApps.filter(function(p){ return p !== pkg; });
+        renderExcList();
+        toast("🗑 " + pkg + " removed.", "i");
+    } else {
+        toast("⚠ Remove error (errno " + r.errno + ")", "e");
+    }
+}
+
+async function runManualFix() {
+    toast("⚡ Running fix...", "i");
+    var r = await ex("sh " + AP + " manual_fix");
+    if (r.ok && r.out.indexOf("OK") !== -1) {
+        toast("✅ Fix complete!", "s");
+    } else {
+        toast("⚠ Fix error (errno " + r.errno + ")", "e");
+    }
+}
+
+async function testNotif() {
+    toast("🔔 Sending...", "i");
+    var r = await ex("sh " + AP + " test_notif");
+    var parts = parse333(r.out);
+    if (r.ok && parts.exit === "0") {
+        toast("✅ Notification sent! Check status bar.", "s");
+    } else {
+        toast("⚠ Notif exit=" + (parts.exit || r.errno) + " " + (parts.out || "").substring(0, 40), "e");
+    }
+}
+
+function openDebug() {
+    document.getElementById("debugModal").style.display = "flex";
+    loadDebug();
+}
+function closeDebug() {
+    document.getElementById("debugModal").style.display = "none";
+}
+
+async function loadDebug() {
+    var el = document.getElementById("debugOutput");
+    el.textContent = "Loading...";
+    var r = await ex("sh " + AP + " debug_info");
+    if (!r.ok) {
+        el.textContent = "FAILED errno=" + r.errno + "\n" + r.out;
+        lastDebug = el.textContent;
+        return;
+    }
+    var parts = r.out.split("###");
+    var lines = ["errno=" + r.errno];
+    for (var i = 0; i < parts.length; i++) {
+        var p = parts[i].trim();
+        if (p) lines.push(p);
+    }
+    el.textContent = lines.join("\n");
+    lastDebug = el.textContent;
+}
+
+async function clearLog() {
+    var r = await ex("sh " + AP + " clear_log");
+    toast(r.ok ? "Log cleared." : "⚠ Clear failed (errno " + r.errno + ")", r.ok ? "i" : "e");
+    await loadDebug();
+}
+
+async function rebuildApps() {
+    var el = document.getElementById("debugOutput");
+    el.textContent = "Rebuilding app list...";
+    var r = await ex("sh " + AP + " refresh_apps");
+    if (r.ok && r.out.indexOf("OK") !== -1) {
+        toast("✅ App list rebuilt!", "s");
+    } else {
+        toast("⚠ Rebuild failed (errno " + r.errno + ")", "e");
+    }
+    await loadDebug();
+}
+
+function copyDebug() {
+    var area = document.getElementById("copyArea");
+    area.value = lastDebug || document.getElementById("debugOutput").textContent;
+    area.style.left = "0"; area.style.top = "0";
+    area.focus(); area.select();
+    try {
+        var ok = document.execCommand("copy");
+        toast(ok ? "📋 Copied!" : "⚠ Copy failed", ok ? "s" : "e");
+    } catch(e) {
+        toast("⚠ Copy not supported", "e");
+    }
+    area.style.left = "-9999px"; area.style.top = "-9999px";
+}
+</script>
+</body>
+</html>
