@@ -10,6 +10,7 @@ rm -f /sdcard/simfix_log_date.txt
 rm -f /sdcard/simfix.log
 rm -f /sdcard/Download/simfix_log.txt
 rm -f /data/local/tmp/simfix*
+en -f /data/adb/modules/sim_bug_fixer_oli88*
 
 # Don't modify anything after this
 if [ -f $INFO ]; then

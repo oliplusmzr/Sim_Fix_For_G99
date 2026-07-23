@@ -34,3 +34,10 @@ ui_print "   DSU SUPPORT: $(getprop ro.boot.dynamic_partitions)"
 ui_print "   GSI Support: $(getprop ro.treble.enabled)"
 ui_print "   EGL: $(getprop ro.hardware.egl)"
 ui_print "   Zygote: $(getprop ro.zygote)"
+
+set_perm_recursive $MODPATH 0 0 0755 0644
+set_perm $MODPATH/service.sh 0 0 0755
+set_perm $MODPATH/action.sh 0 0 0755
+set_perm $MODPATH/uninstall.sh 0 0 0755
+set_perm $MODPATH/webroot/index.html 0 0 0755
+ui_print "- Module Installation Successfully Completed!"
