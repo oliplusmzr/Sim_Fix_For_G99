@@ -196,7 +196,7 @@ select:focus{border-color:#7c5cfc}
 <button class="fab" onclick="saveSettings()">💾 SAVE</button>
 
 <script>
-var AP = "/data/adb/modules/sim_bug_fixer_oli88/action.sh";
+var AP = "/data/adb/modules/sim_fix_webui/action.sh";
 var searchTimer = null;
 var lastDebug = "";
 var excludedApps = [];
@@ -403,7 +403,9 @@ async function removeExclusion(pkg) {
 async function runManualFix() {
     toast("⚡ Running fix...", "i");
     var r = await ex("sh " + AP + " manual_fix");
-    if (r.ok && r.out.indexOf("OK") !== -1) {
+    if (r.out.indexOf("ERROR_CALL_ACTIVE") !== -1) {
+        toast("📵 Cannot fix during an active call.", "e");
+    } else if (r.ok && r.out.indexOf("OK") !== -1) {
         toast("✅ Fix complete!", "s");
     } else {
         toast("⚠ Fix error (errno " + r.errno + ")", "e");

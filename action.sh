@@ -2,7 +2,7 @@
 
 MODDIR=${0%/*}
 CONFIG_FILE="$MODDIR/config.prop"
-LOG_FILE="/data/local/tmp/simfix_lite.log"
+LOG_FILE="/data/local/tmp/simfix_webui.log"
 ACTION=$1
 if [ -z "$ACTION" ]; then ACTION="status"; fi
 
@@ -121,26 +121,44 @@ case "$ACTION" in
         ;;
 
     manual_fix)
+        IN_CALL=$(dumpsys telecom 2>/dev/null | grep -c "isInCall=true")
+        if [ "$IN_CALL" -gt 0 ]; then
+            echo "ERROR_CALL_ACTIVE"
+            exit 0
+        fi
+
+        WIFI_WAS_ON=0
+        if [ "$(settings get global wifi_on 2>/dev/null)" = "1" ]; then
+            WIFI_WAS_ON=1
+        fi
+
         DATA_WAS_ON=0
         if [ "$(settings get global mobile_data 2>/dev/null)" = "1" ]; then
             svc data disable 2>/dev/null
             DATA_WAS_ON=1
             sleep 2
         fi
-        stop ril-daemon 2>/dev/null
-        stop rild 2>/dev/null
-        sleep 2
-        start ril-daemon 2>/dev/null
-        start rild 2>/dev/null
-        sleep 3
-        for iface in $(ip link show 2>/dev/null | grep -oE "rmnet_data[0-9]+" | head -4); do
-            ip link set "$iface" down 2>/dev/null
-            sleep 1
-            ip link set "$iface" up 2>/dev/null
-        done
+
+        settings put global airplane_mode_on 1 2>/dev/null
+        am broadcast -a android.intent.action.AIRPLANE_MODE --ez state true 2>/dev/null
+        sleep 5
+
+        settings put global airplane_mode_on 0 2>/dev/null
+        am broadcast -a android.intent.action.AIRPLANE_MODE --ez state false 2>/dev/null
+        sleep 6
+
+        if [ "$WIFI_WAS_ON" = "1" ]; then
+            WIFI_NOW=$(settings get global wifi_on 2>/dev/null)
+            if [ "$WIFI_NOW" != "1" ]; then
+                svc wifi enable 2>/dev/null
+            fi
+        fi
+
         if [ "$DATA_WAS_ON" = "1" ]; then
             svc data enable 2>/dev/null
+            sleep 2
         fi
+
         echo "OK"
         ;;
 

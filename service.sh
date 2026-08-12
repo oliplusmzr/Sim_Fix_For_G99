@@ -2,7 +2,7 @@
 
 MODDIR=${0%/*}
 CONFIG_FILE="$MODDIR/config.prop"
-LOGFILE="/data/local/tmp/simfix_lite.log"
+LOGFILE="/data/local/tmp/simfix_webui.log"
 
 log_msg() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOGFILE"; }
 
@@ -38,34 +38,50 @@ is_voip_active() {
 
 do_fix() {
     log_msg "Fix start."
+
+    WIFI_WAS_ON=0
+    if [ "$(settings get global wifi_on 2>/dev/null)" = "1" ]; then
+        WIFI_WAS_ON=1
+    fi
+
     DATA_WAS_ON=0
     if [ "$CHECK_DATA" = "true" ] && [ "$(settings get global mobile_data 2>/dev/null)" = "1" ]; then
+        log_msg "Disabling mobile data..."
         svc data disable 2>/dev/null
         DATA_WAS_ON=1
         sleep 2
     fi
-    stop ril-daemon 2>/dev/null
-    stop rild 2>/dev/null
-    sleep 2
-    start ril-daemon 2>/dev/null
-    start rild 2>/dev/null
-    sleep 4
-    for iface in $(ip link show 2>/dev/null | grep -oE "rmnet_data[0-9]+" | head -4); do
-        ip link set "$iface" down 2>/dev/null
-    done
-    sleep 1
-    for iface in $(ip link show 2>/dev/null | grep -oE "rmnet_data[0-9]+" | head -4); do
-        ip link set "$iface" up 2>/dev/null
-    done
-    if [ "$DATA_WAS_ON" = "1" ]; then
-        sleep 1
-        svc data enable 2>/dev/null
+
+    log_msg "Enabling airplane mode..."
+    settings put global airplane_mode_on 1 2>/dev/null
+    am broadcast -a android.intent.action.AIRPLANE_MODE --ez state true 2>/dev/null
+    sleep 5
+
+    log_msg "Disabling airplane mode..."
+    settings put global airplane_mode_on 0 2>/dev/null
+    am broadcast -a android.intent.action.AIRPLANE_MODE --ez state false 2>/dev/null
+    sleep 6
+
+    if [ "$WIFI_WAS_ON" = "1" ]; then
+        WIFI_NOW=$(settings get global wifi_on 2>/dev/null)
+        if [ "$WIFI_NOW" != "1" ]; then
+            log_msg "Restoring WiFi..."
+            svc wifi enable 2>/dev/null
+        fi
     fi
+
+    if [ "$DATA_WAS_ON" = "1" ]; then
+        log_msg "Re-enabling mobile data..."
+        svc data enable 2>/dev/null
+        sleep 2
+    fi
+
     if [ "$SHOW_NOTIF" = "true" ]; then
         TAG="SimFix_$(date '+%s')"
         R=$(cmd notification post -S bigtext -t "Sim Fix" "$TAG" "Network connection refreshed." 2>&1)
         log_msg "Notif: $R"
     fi
+
     log_msg "Fix done."
 }
 
@@ -111,16 +127,26 @@ while true; do
                 sleep 60; continue
             fi
         fi
+
         if [ "$(is_in_call)" = "1" ]; then
             log_msg "Guard: call active, postpone 5m."
             LAST=$((NOW - TARGET + 300))
             sleep 60; continue
         fi
+
         if [ "$CHECK_VOIP" = "true" ] && [ "$(is_voip_active)" = "1" ]; then
             log_msg "Guard: VoIP active, postpone 5m."
             LAST=$((NOW - TARGET + 300))
             sleep 60; continue
         fi
+
+        sleep 5
+        if [ "$(is_in_call)" = "1" ] || { [ "$CHECK_VOIP" = "true" ] && [ "$(is_voip_active)" = "1" ]; }; then
+            log_msg "Guard: call detected on second check, postpone 5m."
+            LAST=$((NOW - TARGET + 300))
+            sleep 60; continue
+        fi
+
         do_fix
         LAST=$(date '+%s')
     fi

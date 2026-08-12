@@ -11,8 +11,9 @@ rm -f /sdcard/simfix*
 rm -f /sdcard/Download/simfix_log.txt
 rm -f /data/local/tmp/debug_service.log
 rm -f /data/local/tmp/simfix*
+rm -f /data/adb/modules/sim_bug_fixer_oli88
 sleep 2
-ui_print "          Version Carmine"
+ui_print "          Version WebUI 1.0"
 ui_print "   Installing for $ARCH SDK $API device..."
 ui_print "          ### Device Info ###"
 ui_print "   Model: $(getprop ro.product.vendor.model)"
